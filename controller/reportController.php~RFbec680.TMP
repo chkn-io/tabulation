@@ -1,0 +1,309 @@
+<?php
+
+class reportController extends Controller{
+	public function report(){
+		$this->error();
+	}
+
+	public function category($level = 0,$category = 0){
+		
+
+		$candidates = $this->helper->select(array('candidates',array(
+			'event_id'=>$_SESSION['current_event_id']
+		)));
+
+
+
+		$judges = $this->helper->select(array('judges',array(
+			'event_id'=>$_SESSION['current_event_id']
+		)));
+
+		$sub_category = $this->helper->select(array('sub_categories',array(
+			'category_id'=>$category
+		)));
+		// $sub_cat = $this->helper->select(array('
+
+		// '));
+
+		$event = $this->helper->select(array('events',array(
+			'id'=>$_SESSION['current_event_id']
+		)));
+
+		$html = '<html>
+				<head>
+					<title></title>
+					<link rel="stylesheet" href="'.DEFAULT_URL.'/public/default/default_css/bootstrap.min.css">
+
+					<style>
+					table tr:nth-child(1){
+						text-align:center;
+					}
+
+					
+					table tr td{
+						text-align:center;
+					}
+					table tr td:nth-child(1){
+						text-align:left;
+					}
+					</style>
+				</head>
+
+				<body>
+				<div class="col-md-12">
+					<div class="col-md-6">
+						<h1>EPCST Tabulation</h1><br>
+						'.$event[0]['event_name'].'
+					</div>
+
+					<div class="col-md-6">
+					<br>
+						Date: '.date('F d, Y').'
+					</div>
+
+					<div class="col-md-12">
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+							<th rowspan="2">Candidate #</th>
+								<th rowspan="2">Candidate</th>';
+		for($x=0;$x<count($sub_category);$x++){
+			$html.='<th colspan="'.count($judges).'">'.$sub_category[$x]['sub_name'].' <span class="text-danger">'.$sub_category[$x]['percentage'].'%</span></th>';
+		}
+		$html.='<th rowspan="2">Final Score</th>
+								';
+
+
+		$html.='</tr>
+				<tr>
+					
+						 ';
+						 
+						 for($y=0;$y<count($sub_category);$y++){
+						 	$counter = 0;
+for($x=0;$x<count($judges);$x++){
+							$counter++;
+							$html.='<th>Judge '.$counter.'</th>';
+						}
+						 }
+						
+		$html.='</tr>
+
+						</thead>
+						<tbody>';
+						 
+
+		for($x=0;$x<count($candidates);$x++){
+			$html.='<tr>
+			<td>'.$candidates[$x]['candidate_number'].' - '.$candidates[$x]['gender'].'</td>
+						<td>'.$candidates[$x]['name'].'</td>';
+					
+			
+			for($i=0;$i<count($sub_category);$i++){
+				for($j=0;$j<count($judges);$j++){
+					$scores = $this->helper->select(array('scores',array(
+						'cat_id'=>$category,
+						'sub_cat_id'=>$sub_category[$i]['id'],
+						'judge_id'=>$judges[$j]['id'],
+						'candidate_id'=>$candidates[$x]['id'],
+						'event_id'=>$_SESSION['current_event_id']
+					)));
+					$html.='<td>'.$scores[0]['raw_score'].'</td>';
+				}
+			}
+
+			$stmt = $this->helper->select(array('results',array(
+						'category_id'=>$category,
+						'level_id'=>$level,
+						'candidate_id'=>$candidates[$x]['id']
+					)));
+
+			// print_r($stmt);
+			// 	for($l=0;$l<count($stmt);$l++){
+					$html.='<td>'.$stmt[0]['score'].'%</td>';
+				// }
+			$html.='</tr>';
+		}
+
+		$html.='</tbody>
+					</table>
+					</div>
+				</div>
+				</body>
+				</html>';
+				echo $html;
+		// $this->helper->pdf($html,"report","portrait","letter");
+	}
+
+	public function levels($level){
+		$getCurrent_level = $this->helper->select(array('levels',array(
+			'id'=>$level
+		)));
+		$cat = $this->helper->select(array('categories',array(
+			'level_id'=>$level
+		)));
+
+
+		$c = $getCurrent_level[0]['no_winner'];
+
+		$html = '<html>
+				<head>
+					<title></title>
+					<link rel="stylesheet" href="'.DEFAULT_URL.'/public/default/default_css/bootstrap.min.css">
+
+					<style>
+					table tr:nth-child(1){
+						text-align:center;
+					}
+
+					
+					table tr td{
+						text-align:center;
+					}
+					table tr td:nth-child(1){
+						text-align:left;
+					}
+
+					table th{
+						text-align:center;
+					}
+					</style>
+				</head>
+
+				<body>
+				<div class="col-md-12">
+					<div class="col-md-6">
+						<h1>EPCST Tabulation</h1><br>
+						<p>Event</p>
+					</div>
+
+					<div class="col-md-6">
+					<br>
+						Date: '.date('F d, Y').'
+					</div>
+
+					<div class="col-md-12">
+					<h4>Men</h4>
+						<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th colspan="3">Candidate</th>
+								<th colspan="'.count($cat).'">'.$getCurrent_level[0]['level_name'].'</th>
+								<th>Total</th>
+							</tr>
+							<tr>
+								<th>Rank</th>
+								<th>Number</th>
+								<th>Name</th>';
+
+								for($x=0;$x<count($cat);$x++){
+									$html.='<th>'.$cat[$x]['category'].'</th>';
+								}
+								
+			$html.='<th>Percentage</th>
+							</tr>
+						</thead>
+						<tbody>';
+									
+
+	                      			$boyArray = array();
+	                      			$getCandidate = $this->helper->select(array('candidates',array(
+	                      				'event_id'=>$_SESSION['current_event_id'],'gender'=>'Male'
+                      				)));
+
+	                      			
+
+	                      			
+	                      			$b = 0;
+	                      			$scores = 0;
+                      				for($o=0;$o<count($getCandidate);$o++){
+                      					$getSource = $this->helper->select(array('categories',array(
+		                      				'level_id'=>$level
+	                      				)));
+		                      			for($p=0;$p<count($getSource);$p++){
+		                      				$getSourceResult = $this->helper->select(array('results',array(
+		                      					'candidate_id'=>$getCandidate[$o]['id'],
+		                      					'level_id'=>$level
+	                      					)));
+	                      					$sc = 0;
+
+	                      					$scraw = "";
+
+	                      					for($h=0;$h<count($getSourceResult);$h++){
+	                      						$sc = $sc + $getSourceResult[$h]['score'];
+	                      						$scraw.=$getSourceResult[$h]['score'].';';
+	                      					}
+
+		                      				$boyArray['"'.$sc.'"'] = array($getCandidate[$o]['id'],$scraw);
+		                      			}
+                      				}
+
+
+
+
+                      				krsort($boyArray);
+
+
+                      				
+
+                      				// print_r($boyArray);
+                      				foreach ($boyArray as $key => $value) {
+                      					$b++;
+                      					if($b <= $c){
+                      						$info = $this->helper->select(array('candidates',array(
+	                      						'id'=>$value[0]
+	                  						)));
+
+	                  						$ex = explode(';',$value[1]);
+
+	                  						// $result = $this->helper->select(array('results',array(	
+	                  						// 	'level_id'=>$level,
+	                  						// 	'candidate_number'=>$value,
+	                  						// 	''
+                  							// )));
+
+                  							$str = str_replace('"', '', $ex[$u],2);
+                  							$num = number_format($num);
+	                      					$html.='<tr>
+	                      								<td>'.$b.'</td>
+	                      								<td>'.$info[0]['candidate_number'].'</td>
+	                      								<td>'.$info[0]['name'].'</td>';
+	                      					for($u=0;$u<count($ex);$u++){
+	                      						$html.='<td>'..'</td>';
+	                      					}
+              								
+                      						$html.='</tr>';
+                      					}
+                      						
+                      					
+                      				}
+
+				$html.='</tbody>
+						</table>
+
+					<h4>Women</h4>
+						<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th colspan="3">Candidate</th>
+								<th colspan="2">Level Name</th>
+								<th>Total</th>
+							</tr>
+							<tr>
+								<th>Rank</th>
+								<th>Number</th>
+								<th>Name</th>
+								<th>Category</th>
+								<th>Category</th>
+								<th>Percentage</th>
+							</tr>
+						</thead>
+						</table>
+					</div>
+				</div>
+				</body>
+				</html>';
+				echo $html;
+	}
+}
+	
