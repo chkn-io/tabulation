@@ -35,6 +35,7 @@ class statusController extends Controller{
 					$score = $score + $result[0]['score'];
 				}
 
+				echo $can[$s]['name'] . ' - ' . $score.PHP_EOL;
 				$this->helper->add(array('level_result',array(
 					'candidate_id'=>$can[$s]['id'],
 					'level_id'=>$id,

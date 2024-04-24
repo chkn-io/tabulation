@@ -42,7 +42,7 @@
  * This is the database configuration for CHKN Framework PHP
  * Define your set host, database name, charset, username and password
  */
-    define('DB_HOST','localhost');
+    define('DB_HOST','127.0.0.1');
     define('DB_NAME','tabulation');
     define('DB_CHARSET','utf8');
     define('DB_USER','root');

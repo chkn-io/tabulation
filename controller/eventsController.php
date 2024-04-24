@@ -570,15 +570,20 @@ $button="";
 				'id'=>$id
 			)));
 
+			$judge = $this->helper->select(array('judges',array(
+				'event_id'=>$_SESSION['current_event_id']
+			)));
+
 			for($x=0;$x<count($can);$x++){
 				// echo $can[$x]['name'];
 				$sub_category = $this->helper->select(array('sub_categories',array(
 					'category_id'=>$id
 				)));
 				$all = 0;
-				$max = $sub_category[0]['max_score'];
 
 				for($y=0;$y<count($sub_category);$y++){
+					$max = $sub_category[$y]['max_score'];
+
 					$scores = $this->helper->select(array('scores',array(
 						'sub_cat_id'=>$sub_category[$y]['id'],
 						'candidate_id'=>$can[$x]['id']
@@ -586,23 +591,32 @@ $button="";
 
 					$s = 0;
 					// echo "<br><br>"
-					for($a=0;$a<count($scores);$a++){
-						$per = $sub_category[$y]['percentage'] *.01;
-						$raw = $scores[$a]['raw_score'] ;
+					if(count($scores) != 0){
+						// echo $can[$x]['id'] . ' - ' .$can[$x]['name'].' - '.count($scores).PHP_EOL;
+						for($a=0;$a<count($scores);$a++){
+							$per = $sub_category[$y]['percentage'] *.01;
+							$raw = $scores[$a]['raw_score'] ;
 
-						$sam = ($raw / $max) * 100; 
-						$s = $s + ($per * $sam);
-						// echo $s;
+
+
+							$sam = ($raw / $max) * 100; 
+							$s = $s + ($per * $sam);
+
+
+							
+							// echo $scores[$a]['raw_score'].'('.$s.')'.'-'."Percentage:".$per.'| Maximum:'.$max.PHP_EOL;
+
+							// echo $s;
+						}
+
 					}
-
-					$judge = $this->helper->select(array('judges',array(
-						'event_id'=>$_SESSION['current_event_id']
-					)));
+				
 
 					$all = $all + ($s/count($judge));
 
-					echo $all;
 				}
+
+					// echo $all.PHP_EOL;
 				
 
 				$this->helper->add(array('results',array(
